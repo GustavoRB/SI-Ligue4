@@ -25,8 +25,8 @@
 		</div>
 
 		<!--VENCEDOR-->
-		<div ng-if="vencedor.jogador != '' && vencedor.soma >= 4" style="color:green">
-			<h1><b>{{vencedor.jogador}} venceu!</b></h1>
+		<div ng-if="vencedor != ''" style="color:green">
+			<h1><b>{{vencedor}} venceu!</b></h1>
 		</div>
 
 		<!--ERRO COLUNA-->
@@ -46,7 +46,7 @@
 				<button 
 					class="btn btn-info" 
 					ng-click="jogada(key)"
-					ng-disabled=" (vencedor.jogador != '' && vencedor.soma >= 4)"
+					ng-disabled=" (vencedor != '')"
 					style="width:4em;margin-left:0.5em; margin-bottom:0.5em;" 
 				>
 					+

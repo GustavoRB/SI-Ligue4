@@ -12,10 +12,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	//---------------------------------------
 
-	$scope.vencedor = {
-		soma: 0,
-		jogador: ''
-	};
+	$scope.vencedor = "";
 
 	//tabuleiro que recebe o jogador dominante de cada celula
 	$scope.tabuleiro = [
@@ -41,7 +38,7 @@ app.controller("homeController",['$scope', function ($scope) {
 				$scope.tabuleiro[coluna][linha].jogador = "";
 			}
 		}
-		$scope.vencedor.jogador = "";
+		$scope.vencedor = "";
 
 		$scope.jogadorDaVez = $scope.quemComeca;
 	};
@@ -56,12 +53,18 @@ app.controller("homeController",['$scope', function ($scope) {
 				
 				$scope.tabuleiro[coluna][linha].jogador = angular.copy($scope.jogadorDaVez);
 
-				me.verificaFimDeJogo();
+				me.verificaFimDeJogo(function(ret){
+
+					if(ret == ""){
+						me.alteraJogadorDaVez();	
+					} else {
+						$scope.vencedor = ret;
+					}
+
+				});
 
 				//esse if so pode ser executado depois de verificaFimDeJogo
-				if($scope.vencedor.soma < 4){
-					me.alteraJogadorDaVez();	
-				};
+				
 				
 
 				return;
@@ -94,19 +97,30 @@ app.controller("homeController",['$scope', function ($scope) {
 	//------------------------------------------VALIDADORES---------------------------------------------------
 
 	//verifica se alguem ganhou
-	me.verificaFimDeJogo = function(){
+	me.verificaFimDeJogo = function(callback){
+
+		var possivelVencedor = {
+			jogador: "",
+			soma: 0
+		};
 
 		//verifica colunas
 		for(var coluna in $scope.tabuleiro){
-			$scope.vencedor.jogador = "";
-			$scope.vencedor.soma = 0;
+			possivelVencedor.jogador = "";
+			possivelVencedor.soma = 0;
 
 			for(var linha in $scope.tabuleiro[coluna]){
 
-				me.somaPontosVitoria(coluna, linha);
-				if($scope.vencedor.soma >= 4){
-					return;
-				}
+				me.somaPontosVitoria(coluna, linha, possivelVencedor, function(ret){
+
+					possivelVencedor = ret;
+
+					if(possivelVencedor.soma >= 4){
+						callback(possivelVencedor.jogador);
+						return;
+					}
+
+				});
 
 			}
 
@@ -114,15 +128,21 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		//verifica linhas
 		for(var linha = 0; linha <= 5; linha++ ){
-			$scope.vencedor.jogador = "";
-			$scope.vencedor.soma = 0;
+			possivelVencedor.jogador = "";
+			possivelVencedor.soma = 0;
 
 			for (var coluna in $scope.tabuleiro) {
 			
-				me.somaPontosVitoria(coluna, linha);
-				if($scope.vencedor.soma >= 4){
-					return;
-				}
+				me.somaPontosVitoria(coluna, linha, possivelVencedor, function(ret){
+
+					possivelVencedor = ret;
+
+					if(possivelVencedor.soma >= 4){
+						callback(possivelVencedor.jogador);
+						return;
+					}
+
+				});
 
 			}
 		}
@@ -140,15 +160,21 @@ app.controller("homeController",['$scope', function ($scope) {
 		colunaDejada = 3;
 
 		while(linha != 4 && coluna != 7){
-			$scope.vencedor.jogador = "";
-			$scope.vencedor.soma = 0;
+			possivelVencedor.jogador = "";
+			possivelVencedor.soma = 0;
 
 			while(linha <= linhaDesejada && coluna <= colunaDejada){
 
-				me.somaPontosVitoria(coluna, linha);
-				if($scope.vencedor.soma >= 4){
-					return;
-				}
+				me.somaPontosVitoria(coluna, linha, possivelVencedor, function(ret){
+
+					possivelVencedor = ret;
+
+					if(possivelVencedor.soma >= 4){
+						callback(possivelVencedor.jogador);
+						return;
+					}
+
+				});
 
 				coluna++;
 				linha++;
@@ -190,15 +216,21 @@ app.controller("homeController",['$scope', function ($scope) {
 		colunaDejada = 3;
 
 		while(linha != 1 && coluna != 7){
-			$scope.vencedor.jogador = "";
-			$scope.vencedor.soma = 0;
+			possivelVencedor.jogador = "";
+			possivelVencedor.soma = 0;
 
 			while(linha >= linhaDesejada && coluna <= colunaDejada){
 
-				me.somaPontosVitoria(coluna, linha);
-				if($scope.vencedor.soma >= 4){
-					return;
-				}
+				me.somaPontosVitoria(coluna, linha, possivelVencedor, function(ret){
+
+					possivelVencedor = ret;
+
+					if(possivelVencedor.soma >= 4){
+						callback(possivelVencedor.jogador);
+						return;
+					}
+
+				});
 
 
 				linha--;
@@ -232,23 +264,33 @@ app.controller("homeController",['$scope', function ($scope) {
 				colunaDejada = 6;
 			}
 		}
+
+
+		callback("");
 	};
 
 	//soma +1 em vencedor ou reseta calculo
-	me.somaPontosVitoria = function(coluna, linha){
+	me.somaPontosVitoria = function(coluna, linha, possivelVencedor, callback){
 
 		if($scope.tabuleiro[coluna][linha].jogador != ""){
 
-			if($scope.tabuleiro[coluna][linha].jogador != $scope.vencedor.jogador){
+			if($scope.tabuleiro[coluna][linha].jogador != possivelVencedor.jogador){
 				//quando sequencia nova
-				$scope.vencedor.jogador = angular.copy($scope.tabuleiro[coluna][linha].jogador);
-				$scope.vencedor.soma = 1;
+				possivelVencedor.jogador = angular.copy($scope.tabuleiro[coluna][linha].jogador);
+				possivelVencedor.soma = 1;
 			} else {
 				//quando na mesma sequencia
-				$scope.vencedor.soma ++;
+				possivelVencedor.soma ++;
 			}
 
+		} else {
+
+			possivelVencedor.jogador = "";
+			possivelVencedor.soma = 0;
+
 		}
+
+		callback(possivelVencedor);
 
 	};
 
