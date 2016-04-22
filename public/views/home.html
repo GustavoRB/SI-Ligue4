@@ -1,0 +1,74 @@
+<div class="row">
+	<div class="col-md-4" style="margin-top: 2em; margin-left:2em">
+
+		<!--QUEM COMECA-->
+		<label>Quem Começa?</label>
+		<select ng-model="quemComeca">
+		  <option value="humano" >Humano</option>
+		  <option value="computador">Computador</option>
+		</select>
+
+		<!--BTN INICIAR-->
+		<br>
+		<button class="btn btn-success btn-lg" ng-click="iniciar()">Iniciar</button>
+
+		<!--LEGENDA-->
+		<br>
+		<label>Humano: <b style="color:red">Vermelho</b> </label>
+		<br>
+		<label>Computador: <b style="color:blue">Azul</b></label>
+		<br>
+
+		<!--JOGADOR DA VEZ-->
+		<div class="">
+			<h2>Jogador da vez: {{jogadorDaVez}}</h2>
+		</div>
+
+		<!--VENCEDOR-->
+		<div ng-if="vencedor.jogador != '' && vencedor.soma >= 4" style="color:green">
+			<h1><b>{{vencedor.jogador}} venceu!</b></h1>
+		</div>
+
+		<!--ERRO COLUNA-->
+		<div ng-if="colunaCheia" style="color:red">
+			<h4><b>Essa coluna esta cheia!</b></h4>
+		</div>
+			
+	</div>
+
+	
+
+	<!--TABULEIRO-->
+	<div class="col-md-6" style="margin-top: 2em; margin-left:2em">
+		<div ng-repeat="(key, value) in tabuleiro">
+			<div style="position: absolute; margin-left:{{key*5}}em">
+				<!-- jogadorDaVez == 'computador' || -->
+				<button 
+					class="btn btn-info" 
+					ng-click="jogada(key)"
+					ng-disabled=" (vencedor.jogador != '' && vencedor.soma >= 4)"
+					style="width:4em;margin-left:0.5em; margin-bottom:0.5em;" 
+				>
+					+
+				</button>
+				<div ng-repeat="linha in tabuleiro[key]">
+					 <div class="celula">
+
+						<span ng-show="linha.jogador == 'humano'">
+							<svg height="60" width="60">
+							  <circle cx="33" cy="33" r="20" stroke="black" stroke-width="1" fill="red" />
+							</svg>
+						</span>
+
+						<span ng-show="linha.jogador == 'computador'">
+							<svg height="60" width="60">
+							  <circle cx="33" cy="33" r="20" stroke="black" stroke-width="1" fill="blue" />
+							</svg>
+						</span>
+					</div>
+ 				</div>
+			</div>
+			
+		</div>
+	</div>
+</div>

@@ -1,0 +1,34 @@
+<!DOCTYPE>
+<html>
+<head lang="pt">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="stylesheets/main.css">
+
+    <script src="bower_components/angular/angular.js"></script>
+	<script src="bower_components/angular/angular.min.js"></script>
+    <title>Device Manager</title>
+</head>
+<body ng-app="devicemanager">
+    <div class="container-fluid">
+        <div ng-view="true"></div>
+    </div>
+
+</body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="scripts/events/eventemitter2.js"></script>
+<script src="scripts/events/MensagemBrowser.js"></script>
+<script src="/scripts/events/SIOM.js"></script>
+
+<script src="/scripts/app.js"></script>
+<script src="/scripts/rotas.js"></script>
+
+<!--SERVICES AND CONTROLLER-->
+<script src="/scripts/services/userLogado.js"></script>
+<script src="/scripts/controllers/homeController.js"></script>
+
+<!--BOWER COMPONENTS-->
+<script src="bower_components/angular-animate/angular-animate.js"></script>
+<script src="bower_components/angular-route/angular-route.js"></script>
+</html>
