@@ -57,7 +57,12 @@ app.controller("homeController",['$scope', function ($scope) {
 				$scope.tabuleiro[coluna][linha].jogador = angular.copy($scope.jogadorDaVez);
 
 				me.verificaFimDeJogo();
-				me.alteraJogadorDaVez();
+
+				//esse if so pode ser executado depois de verificaFimDeJogo
+				if($scope.vencedor.soma < 4){
+					me.alteraJogadorDaVez();	
+				};
+				
 
 				return;
 			}
@@ -70,9 +75,20 @@ app.controller("homeController",['$scope', function ($scope) {
 	me.alteraJogadorDaVez = function(){
 		if($scope.jogadorDaVez == "humano"){
 			$scope.jogadorDaVez = "computador";
+			me.jogadaComputador();
 		} else {
 			$scope.jogadorDaVez = "humano";
 		}
+	};
+
+	//calcula a proxima jogada do computador
+	me.jogadaComputador = function(){
+
+	};
+
+	//da uma nota ao tabuleiro
+	me.calcValorTabuleiro = function(){
+
 	};
 
 	//------------------------------------------VALIDADORES---------------------------------------------------
@@ -111,6 +127,7 @@ app.controller("homeController",['$scope', function ($scope) {
 			}
 		}
 
+		//variaveis usadas nas verificacoes verticais
 		var linha = null;
 		var coluna = null;
 		var colunaDejada = null;
@@ -217,6 +234,7 @@ app.controller("homeController",['$scope', function ($scope) {
 		}
 	};
 
+	//soma +1 em vencedor ou reseta calculo
 	me.somaPontosVitoria = function(coluna, linha){
 
 		if($scope.tabuleiro[coluna][linha].jogador != ""){
