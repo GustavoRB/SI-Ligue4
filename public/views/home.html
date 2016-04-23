@@ -29,6 +29,10 @@
 			<h1><b>{{vencedor}} venceu!</b></h1>
 		</div>
 
+		<div ng-if="empate" style="color:green">
+			<h1><b>Empate!</b></h1>
+		</div>
+
 		<!--ERRO COLUNA-->
 		<div ng-if="colunaCheia" style="color:red">
 			<h4><b>Essa coluna esta cheia!</b></h4>
@@ -46,7 +50,7 @@
 				<button 
 					class="btn btn-info" 
 					ng-click="jogada(key)"
-					ng-disabled=" (vencedor != '')"
+					ng-disabled="vencedor != '' || jogadorDaVez == null"
 					style="width:4em;margin-left:0.5em; margin-bottom:0.5em;" 
 				>
 					+

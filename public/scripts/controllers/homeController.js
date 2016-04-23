@@ -9,6 +9,7 @@ app.controller("homeController",['$scope', function ($scope) {
 	//------VARIAVEIS DE VALIDACAO-----------
 
 	$scope.colunaCheia = false;
+	$scope.empate = false;
 
 	//---------------------------------------
 
@@ -39,6 +40,7 @@ app.controller("homeController",['$scope', function ($scope) {
 			}
 		}
 		$scope.vencedor = "";
+		$scope.empate = false;
 
 		$scope.jogadorDaVez = $scope.quemComeca;
 	};
@@ -290,7 +292,26 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		}
 
+		me.verificaEmpate();
+
 		callback(possivelVencedor);
+
+	};
+
+	me.verificaEmpate = function(){
+
+		for(var coluna in $scope.tabuleiro){
+
+			if($scope.tabuleiro[coluna][0].jogador == ""){
+				return;
+			}
+
+			// if(coluna == 6){
+			// 	$scope.empate = true;
+			// }
+		}
+
+		$scope.empate = true;
 
 	};
 
