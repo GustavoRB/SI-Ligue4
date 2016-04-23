@@ -9,7 +9,6 @@ app.controller("homeController",['$scope', function ($scope) {
 	//------VARIAVEIS DE VALIDACAO-----------
 
 	$scope.colunaCheia = false;
-	$scope.empate = false;
 
 	//---------------------------------------
 
@@ -40,7 +39,6 @@ app.controller("homeController",['$scope', function ($scope) {
 			}
 		}
 		$scope.vencedor = "";
-		$scope.empate = false;
 
 		$scope.jogadorDaVez = $scope.quemComeca;
 	};
@@ -55,7 +53,9 @@ app.controller("homeController",['$scope', function ($scope) {
 				
 				$scope.tabuleiro[coluna][linha].jogador = angular.copy($scope.jogadorDaVez);
 
-				me.verificaFimDeJogo(function(ret){
+				me.verificaFimDeJogo($scope.tabuleiro, function(ret){
+
+					console.log("ret verificaFimDeJogo", ret);
 
 					if(ret == ""){
 						me.alteraJogadorDaVez();	
@@ -99,7 +99,7 @@ app.controller("homeController",['$scope', function ($scope) {
 	//------------------------------------------VALIDADORES---------------------------------------------------
 
 	//verifica se alguem ganhou
-	me.verificaFimDeJogo = function(callback){
+	me.verificaFimDeJogo = function(tabuleiro, callback){
 
 		var possivelVencedor = {
 			jogador: "",
@@ -107,13 +107,13 @@ app.controller("homeController",['$scope', function ($scope) {
 		};
 
 		//verifica colunas
-		for(var coluna in $scope.tabuleiro){
+		for(var coluna in tabuleiro){
 			possivelVencedor.jogador = "";
 			possivelVencedor.soma = 0;
 
-			for(var linha in $scope.tabuleiro[coluna]){
+			for(var linha in tabuleiro[coluna]){
 
-				me.somaPontosVitoria(coluna, linha, possivelVencedor, function(ret){
+				me.somaPontosVitoria(tabuleiro, coluna, linha, possivelVencedor, function(ret){
 
 					possivelVencedor = ret;
 
@@ -128,14 +128,15 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		}
 
+
 		//verifica linhas
 		for(var linha = 0; linha <= 5; linha++ ){
 			possivelVencedor.jogador = "";
 			possivelVencedor.soma = 0;
 
-			for (var coluna in $scope.tabuleiro) {
+			for (var coluna in tabuleiro) {
 			
-				me.somaPontosVitoria(coluna, linha, possivelVencedor, function(ret){
+				me.somaPontosVitoria(tabuleiro, coluna, linha, possivelVencedor, function(ret){
 
 					possivelVencedor = ret;
 
@@ -167,7 +168,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 			while(linha <= linhaDesejada && coluna <= colunaDejada){
 
-				me.somaPontosVitoria(coluna, linha, possivelVencedor, function(ret){
+				me.somaPontosVitoria(tabuleiro, coluna, linha, possivelVencedor, function(ret){
 
 					possivelVencedor = ret;
 
@@ -223,7 +224,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 			while(linha >= linhaDesejada && coluna <= colunaDejada){
 
-				me.somaPontosVitoria(coluna, linha, possivelVencedor, function(ret){
+				me.somaPontosVitoria(tabuleiro, coluna, linha, possivelVencedor, function(ret){
 
 					possivelVencedor = ret;
 
@@ -267,18 +268,26 @@ app.controller("homeController",['$scope', function ($scope) {
 			}
 		}
 
+		me.verificaEmpate(tabuleiro, function(ret){
 
-		callback("");
+			if(ret){
+				callback("empate");
+			} else {
+				callback("");
+			}
+
+		});
+
 	};
 
 	//soma +1 em vencedor ou reseta calculo
-	me.somaPontosVitoria = function(coluna, linha, possivelVencedor, callback){
+	me.somaPontosVitoria = function(tabuleiro, coluna, linha, possivelVencedor, callback){
 
-		if($scope.tabuleiro[coluna][linha].jogador != ""){
+		if(tabuleiro[coluna][linha].jogador != ""){
 
-			if($scope.tabuleiro[coluna][linha].jogador != possivelVencedor.jogador){
+			if(tabuleiro[coluna][linha].jogador != possivelVencedor.jogador){
 				//quando sequencia nova
-				possivelVencedor.jogador = angular.copy($scope.tabuleiro[coluna][linha].jogador);
+				possivelVencedor.jogador = angular.copy(tabuleiro[coluna][linha].jogador);
 				possivelVencedor.soma = 1;
 			} else {
 				//quando na mesma sequencia
@@ -292,26 +301,22 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		}
 
-		me.verificaEmpate();
-
 		callback(possivelVencedor);
 
 	};
 
-	me.verificaEmpate = function(){
+	me.verificaEmpate = function(tabuleiro, callback){
 
-		for(var coluna in $scope.tabuleiro){
+		for(var coluna in tabuleiro){
 
-			if($scope.tabuleiro[coluna][0].jogador == ""){
+			if(tabuleiro[coluna][0].jogador == ""){
+				callback(false);
 				return;
 			}
-
-			// if(coluna == 6){
-			// 	$scope.empate = true;
-			// }
+			
 		}
 
-		$scope.empate = true;
+		callback(true);
 
 	};
 

@@ -25,11 +25,12 @@
 		</div>
 
 		<!--VENCEDOR-->
-		<div ng-if="vencedor != ''" style="color:green">
+		<div ng-if="vencedor == 'humano' || vencedor == 'computador' " style="color:green">
 			<h1><b>{{vencedor}} venceu!</b></h1>
 		</div>
 
-		<div ng-if="empate" style="color:green">
+		<!--EMPATE-->
+		<div ng-if="vencedor == 'empate'" style="color:green">
 			<h1><b>Empate!</b></h1>
 		</div>
 
