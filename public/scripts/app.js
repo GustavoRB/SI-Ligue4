@@ -1,6 +1,6 @@
 
 
-var app = angular.module('devicemanager', [
+var app = angular.module('ligue4', [
     'ngAnimate',
     'ngRoute'
 ]);

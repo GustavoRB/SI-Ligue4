@@ -65,10 +65,6 @@ app.controller("homeController",['$scope', function ($scope) {
 
 				});
 
-				//esse if so pode ser executado depois de verificaFimDeJogo
-				
-				
-
 				return;
 			}
 		}
@@ -91,8 +87,185 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	};
 
+	$scope.teste = function(){
+		me.calcValorTabuleiro($scope.tabuleiro, function(ret){
+			console.log("valor do tabuleiro", ret);
+		});
+	};
+
 	//da uma nota ao tabuleiro
-	me.calcValorTabuleiro = function(){
+	me.calcValorTabuleiro = function(tabuleiro, callback){
+
+		var somaTabuleiro = 0;
+
+		for(var coluna = 0; coluna <= 6; coluna++){
+			for(var linha = 0; linha <= 5; linha++){
+				me.calcPossiveisJogadas(tabuleiro, coluna, linha, function(ret){
+
+					somaTabuleiro += ret;
+
+				});
+			}
+		}
+
+		callback(somaTabuleiro);
+
+	};
+
+	//calcula as possiveis jogadas a partir da posicao e tabuleiro enviados
+	me.calcPossiveisJogadas = function(tabuleiro, coluna, linha, callback){
+
+		//da um valor as possiveis sequencias
+		var somaAtual = 0;
+
+		//quarda quantas pecas existem por sequencia
+		var sequenciaAtual = [
+			{
+				jogador: "",
+				soma: 0
+			},
+			{
+				jogador: "",
+				soma: 0
+			},
+			{
+				jogador: "",
+				soma: 0
+			},
+			{
+				jogador: "",
+				soma: 0
+			}
+		];
+
+		//verifica sequencia para direita
+		for(var colunaAtual = coluna; colunaAtual < coluna+4; colunaAtual++){
+			if(colunaAtual > 6){
+
+				sequenciaAtual[0].jogador = "";
+				sequenciaAtual[0].soma = 0;
+				break;
+
+			} else {
+				if(tabuleiro[colunaAtual][linha].jogador != ""){
+					if(sequenciaAtual[0].jogador == ""){
+						sequenciaAtual[0].jogador = tabuleiro[colunaAtual][linha].jogador;
+						sequenciaAtual[0].soma = 1;
+					} else if(sequenciaAtual[0].jogador == tabuleiro[colunaAtual][linha].jogador) {
+						sequenciaAtual[0].soma ++;
+					} else {
+						sequenciaAtual[0].jogador = "";
+						sequenciaAtual[0].soma = 0;
+						break;
+					}
+				}
+			}
+		}
+
+		//verifica sequencia para baixo
+		for(var linhaAtual = linha; linhaAtual < linha+4; linhaAtual++){
+			if(linhaAtual > 5){
+				sequenciaAtual[1].jogador = "";
+				sequenciaAtual[1].soma = 0;
+				break;
+			}else{
+				if(tabuleiro[coluna][linhaAtual].jogador != ""){
+					if(sequenciaAtual[1].jogador == ""){
+						sequenciaAtual[1].jogador = tabuleiro[coluna][linhaAtual].jogador;
+						sequenciaAtual[1].soma = 1;
+					} else if(sequenciaAtual[1].jogador == tabuleiro[coluna][linhaAtual].jogador) {
+						sequenciaAtual[1].soma ++;
+					} else {
+						sequenciaAtual[1].jogador = "";
+						sequenciaAtual[1].soma = 0;
+						break;
+					}
+				}
+			}
+		}
+
+		//verifica sequencia para diagonal decrescente
+		var colunaAtual = coluna;
+		var linhaAtual = linha;
+		while(colunaAtual < coluna+4){
+
+			if(linhaAtual > 5 || colunaAtual > 6){
+				sequenciaAtual[2].jogador = "";
+				sequenciaAtual[2].soma = 0;
+				break;
+			}else{
+				if(tabuleiro[colunaAtual][linhaAtual].jogador != ""){
+					if(sequenciaAtual[2].jogador == ""){
+						sequenciaAtual[2].jogador = tabuleiro[colunaAtual][linhaAtual].jogador;
+						sequenciaAtual[2].soma = 1;
+					} else if(sequenciaAtual[2].jogador == tabuleiro[colunaAtual][linhaAtual].jogador) {
+						sequenciaAtual[2].soma ++;
+					} else {
+						sequenciaAtual[2].jogador = "";
+						sequenciaAtual[2].soma = 0;
+						break;
+					}
+				}
+			}
+
+			colunaAtual++;
+			linhaAtual++;
+		}
+
+		//verifica sequencia para diagonal crescente
+		colunaAtual = coluna;
+		linhaAtual = linha;
+		while(colunaAtual < coluna+4){
+
+			if(linhaAtual < 0 || colunaAtual > 6){
+				sequenciaAtual[3].jogador = "";
+				sequenciaAtual[3].soma = 0;
+				break;
+			}else{
+				if(tabuleiro[colunaAtual][linhaAtual].jogador != ""){
+					if(sequenciaAtual[3].jogador == ""){
+						sequenciaAtual[3].jogador = tabuleiro[colunaAtual][linhaAtual].jogador;
+						sequenciaAtual[3].soma = 1;
+					} else if(sequenciaAtual[3].jogador == tabuleiro[colunaAtual][linhaAtual].jogador) {
+						sequenciaAtual[3].soma ++;
+					} else {
+						sequenciaAtual[3].jogador = "";
+						sequenciaAtual[3].soma = 0;
+						break;
+					}
+				}
+			}
+
+
+			colunaAtual ++;
+			linhaAtual --;
+		}
+
+
+		//faz o somatorio final
+		for(var index in sequenciaAtual){
+
+			var pontos = 0;
+
+			if(sequenciaAtual[index].soma == 1){
+				pontos = 5;
+			} else if(sequenciaAtual[index].soma == 2){
+				pontos = 50;
+			} else if(sequenciaAtual[index].soma == 3){
+				pontos = 100;
+			} else if(sequenciaAtual[index].soma == 4){
+				pontos = 10000;
+			}
+
+			if(sequenciaAtual[index].jogador == "humano"){
+				somaAtual -= pontos;
+			}else{
+				somaAtual += pontos;
+			}
+
+		}
+
+		callback(somaAtual);
 
 	};
 
