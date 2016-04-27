@@ -138,49 +138,71 @@ app.controller("homeController",['$scope', function ($scope) {
 			}
 		];
 
-		//verifica sequencia para direita
-		for(var colunaAtual = coluna; colunaAtual < coluna+4; colunaAtual++){
-			if(colunaAtual > 6){
+		function somaJogada(jogada, x, y, callback){
 
-				sequenciaAtual[0].jogador = "";
-				sequenciaAtual[0].soma = 0;
-				break;
+			if(x > 6 || y > 5 || y < 0){
+
+				jogada.jogador = "";
+				jogada.soma = 0;
+
+				callback("break");
+
+				return;
 
 			} else {
-				if(tabuleiro[colunaAtual][linha].jogador != ""){
-					if(sequenciaAtual[0].jogador == ""){
-						sequenciaAtual[0].jogador = tabuleiro[colunaAtual][linha].jogador;
-						sequenciaAtual[0].soma = 1;
-					} else if(sequenciaAtual[0].jogador == tabuleiro[colunaAtual][linha].jogador) {
-						sequenciaAtual[0].soma ++;
+				if(tabuleiro[x][y].jogador != ""){
+					if(jogada.jogador == ""){
+						jogada.jogador = tabuleiro[x][y].jogador;
+						jogada.soma = 1;
+					} else if(jogada.jogador == tabuleiro[x][y].jogador) {
+						jogada.soma ++;
 					} else {
-						sequenciaAtual[0].jogador = "";
-						sequenciaAtual[0].soma = 0;
-						break;
+						jogada.jogador = "";
+						jogada.soma = 0;
+
+						callback("break");
+
+						return;
+
 					}
 				}
+			}
+
+		}
+
+		//verifica sequencia para direita
+		for(var colunaAtual = coluna; colunaAtual < coluna+4; colunaAtual++){
+
+			var quebra = false;
+
+			somaJogada(sequenciaAtual[0], colunaAtual, linha, function(ret){
+
+				if(ret == "break"){
+					quebra = true;
+				}
+
+			});
+
+			if(quebra){
+				break;
 			}
 		}
 
 		//verifica sequencia para baixo
 		for(var linhaAtual = linha; linhaAtual < linha+4; linhaAtual++){
-			if(linhaAtual > 5){
-				sequenciaAtual[1].jogador = "";
-				sequenciaAtual[1].soma = 0;
-				break;
-			}else{
-				if(tabuleiro[coluna][linhaAtual].jogador != ""){
-					if(sequenciaAtual[1].jogador == ""){
-						sequenciaAtual[1].jogador = tabuleiro[coluna][linhaAtual].jogador;
-						sequenciaAtual[1].soma = 1;
-					} else if(sequenciaAtual[1].jogador == tabuleiro[coluna][linhaAtual].jogador) {
-						sequenciaAtual[1].soma ++;
-					} else {
-						sequenciaAtual[1].jogador = "";
-						sequenciaAtual[1].soma = 0;
-						break;
-					}
+
+			var quebra = false;
+
+			somaJogada(sequenciaAtual[1], coluna, linhaAtual, function(ret){
+
+				if(ret == "break"){
+					quebra = true;
 				}
+
+			});
+
+			if(quebra){
+				break;
 			}
 		}
 
@@ -189,23 +211,18 @@ app.controller("homeController",['$scope', function ($scope) {
 		var linhaAtual = linha;
 		while(colunaAtual < coluna+4){
 
-			if(linhaAtual > 5 || colunaAtual > 6){
-				sequenciaAtual[2].jogador = "";
-				sequenciaAtual[2].soma = 0;
-				break;
-			}else{
-				if(tabuleiro[colunaAtual][linhaAtual].jogador != ""){
-					if(sequenciaAtual[2].jogador == ""){
-						sequenciaAtual[2].jogador = tabuleiro[colunaAtual][linhaAtual].jogador;
-						sequenciaAtual[2].soma = 1;
-					} else if(sequenciaAtual[2].jogador == tabuleiro[colunaAtual][linhaAtual].jogador) {
-						sequenciaAtual[2].soma ++;
-					} else {
-						sequenciaAtual[2].jogador = "";
-						sequenciaAtual[2].soma = 0;
-						break;
-					}
+			var quebra = false;
+
+			somaJogada(sequenciaAtual[2], colunaAtual, linhaAtual, function(ret){
+
+				if(ret == "break"){
+					quebra = true;
 				}
+
+			});
+
+			if(quebra){
+				break;
 			}
 
 			colunaAtual++;
@@ -217,25 +234,19 @@ app.controller("homeController",['$scope', function ($scope) {
 		linhaAtual = linha;
 		while(colunaAtual < coluna+4){
 
-			if(linhaAtual < 0 || colunaAtual > 6){
-				sequenciaAtual[3].jogador = "";
-				sequenciaAtual[3].soma = 0;
-				break;
-			}else{
-				if(tabuleiro[colunaAtual][linhaAtual].jogador != ""){
-					if(sequenciaAtual[3].jogador == ""){
-						sequenciaAtual[3].jogador = tabuleiro[colunaAtual][linhaAtual].jogador;
-						sequenciaAtual[3].soma = 1;
-					} else if(sequenciaAtual[3].jogador == tabuleiro[colunaAtual][linhaAtual].jogador) {
-						sequenciaAtual[3].soma ++;
-					} else {
-						sequenciaAtual[3].jogador = "";
-						sequenciaAtual[3].soma = 0;
-						break;
-					}
-				}
-			}
+			var quebra = false;
 
+			somaJogada(sequenciaAtual[3], colunaAtual, linhaAtual, function(ret){
+
+				if(ret == "break"){
+					quebra = true;
+				}
+
+			});
+
+			if(quebra){
+				break;
+			}
 
 			colunaAtual ++;
 			linhaAtual --;
