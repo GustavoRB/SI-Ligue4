@@ -97,12 +97,14 @@ app.controller("homeController",['$scope', function ($scope) {
 	me.calcValorTabuleiro = function(tabuleiro, callback){
 
 		var somaTabuleiro = 0;
+		var temQuadrupla = false;
 
 		for(var coluna = 0; coluna <= 6; coluna++){
 			for(var linha = 0; linha <= 5; linha++){
-				me.calcPossiveisJogadas(tabuleiro, coluna, linha, function(ret){
+				me.calcPossiveisJogadas(tabuleiro, coluna, linha, temQuadrupla, function(ret){
 
-					somaTabuleiro += ret;
+					somaTabuleiro += ret.somaAtual;
+					temQuadrupla = ret.temQuadrupla;
 
 				});
 			}
@@ -113,7 +115,7 @@ app.controller("homeController",['$scope', function ($scope) {
 	};
 
 	//calcula as possiveis jogadas a partir da posicao e tabuleiro enviados
-	me.calcPossiveisJogadas = function(tabuleiro, coluna, linha, callback){
+	me.calcPossiveisJogadas = function(tabuleiro, coluna, linha, temQuadrupla, callback){
 
 		//da um valor as possiveis sequencias
 		var somaAtual = 0;
@@ -264,7 +266,8 @@ app.controller("homeController",['$scope', function ($scope) {
 				pontos = 50;
 			} else if(sequenciaAtual[index].soma == 3){
 				pontos = 100;
-			} else if(sequenciaAtual[index].soma == 4){
+			} else if(sequenciaAtual[index].soma == 4 && !temQuadrupla){
+				temQuadrupla = true;
 				pontos = 10000;
 			}
 
@@ -276,7 +279,12 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		}
 
-		callback(somaAtual);
+		ret = {
+			somaAtual: somaAtual,
+			temQuadrupla: temQuadrupla
+		};
+
+		callback(ret);
 
 	};
 
