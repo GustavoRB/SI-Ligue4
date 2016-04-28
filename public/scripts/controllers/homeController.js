@@ -44,32 +44,22 @@ app.controller("homeController",['$scope', function ($scope) {
 	};
 
 	//adiciona peca na coluna selecionada
-	$scope.jogada = function(coluna){
+	me.jogada = function(tabuleiro, coluna, jogadordavez, callback){
 
-		$scope.colunaCheia = false;
-
-		for(var linha = $scope.tabuleiro[coluna].length-1; linha >= 0; linha--){
-			if($scope.tabuleiro[coluna][linha].jogador == ""){
+		for(var linha = tabuleiro[coluna].length-1; linha >= 0; linha--){
+			if(tabuleiro[coluna][linha].jogador == ""){
 				
-				$scope.tabuleiro[coluna][linha].jogador = angular.copy($scope.jogadorDaVez);
+				tabuleiro[coluna][linha].jogador = angular.copy(jogadordavez);
 
-				me.verificaFimDeJogo($scope.tabuleiro, function(ret){
-
-					console.log("ret verificaFimDeJogo", ret);
-
-					if(ret == ""){
-						me.alteraJogadorDaVez();	
-					} else {
-						$scope.vencedor = ret;
-					}
-
-				});
+				callback(tabuleiro);
 
 				return;
+
 			}
 		}
 
-		$scope.colunaCheia = true;
+		callback("colunaEstaCheia");
+
 	};
 
 	//altera entre jogada humano e jogada computador
@@ -80,6 +70,38 @@ app.controller("homeController",['$scope', function ($scope) {
 		} else {
 			$scope.jogadorDaVez = "humano";
 		}
+	};
+
+	//executa a jogada do humano
+	$scope.jogadaHumano = function(coluna){
+
+		$scope.colunaCheia = false;
+
+		me.jogada(angular.copy($scope.tabuleiro), coluna, angular.copy($scope.jogadorDaVez), function(retTabuleiro){
+
+			if(retTabuleiro == "colunaEstaCheia"){
+				
+				$scope.colunaCheia = true;
+
+			} else {
+
+				$scope.tabuleiro = retTabuleiro;
+
+				me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
+
+					console.log("ret verificaFimDeJogo", retVencedor);
+
+					if(retVencedor == ""){
+						me.alteraJogadorDaVez();	
+					} else {
+						$scope.vencedor = retVencedor;
+					}
+
+				});
+
+			}
+
+		});
 	};
 
 	//calcula a proxima jogada do computador
