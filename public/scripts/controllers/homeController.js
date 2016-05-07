@@ -281,6 +281,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		var somaTabuleiro = 0;
 		var temQuadrupla = false;
+		var nivel = 0;
 
 		for(var coluna = 0; coluna <= 6; coluna++){
 			for(var linha = 0; linha <= 5; linha++){
@@ -289,11 +290,15 @@ app.controller("homeController",['$scope', function ($scope) {
 					somaTabuleiro += ret.somaAtual;
 					temQuadrupla = ret.temQuadrupla;
 
+					if(tabuleiro[coluna][linha] != undefined){
+						nivel++;
+					}
+
 				});
 			}
 		}
 
-		callback(somaTabuleiro);
+		callback(somaTabuleiro * (1-(nivel/100)));
 
 	};
 
@@ -448,7 +453,7 @@ app.controller("homeController",['$scope', function ($scope) {
 			} else if(sequenciaAtual[index].soma == 2){
 				pontos = 50;
 			} else if(sequenciaAtual[index].soma == 3){
-				pontos = 100;
+				pontos = 200;
 			} else if(sequenciaAtual[index].soma == 4 && !temQuadrupla){
 				temQuadrupla = true;
 				pontos = 10000;
