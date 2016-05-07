@@ -40,7 +40,7 @@ app.controller("homeController",['$scope', function ($scope) {
 		}
 		$scope.vencedor = "";
 
-		$scope.jogadorDaVez = $scope.quemComeca;
+		$scope.jogadorDaVez = angular.copy($scope.quemComeca);
 	};
 
 	//adiciona peca na coluna selecionada
@@ -66,7 +66,30 @@ app.controller("homeController",['$scope', function ($scope) {
 	me.alteraJogadorDaVez = function(){
 		if($scope.jogadorDaVez == "humano"){
 			$scope.jogadorDaVez = "computador";
-			me.jogadaComputador();
+
+			me.jogadaComputador([], 1, angular.copy($scope.tabuleiro), function(retDecisao, pq){
+
+				console.log("retDecisao", retDecisao, pq);
+					
+				me.jogada(angular.copy($scope.tabuleiro), retDecisao.coluna, "computador", function(retTabuleiro){
+
+					$scope.tabuleiro = angular.copy(retTabuleiro);
+
+
+					me.verificaFimDeJogo(angular.copy($scope.tabuleiro), function(retVencedor){
+
+						console.log("ret verificaFimDeJogo", retVencedor);
+
+						if(retVencedor == ""){
+							me.alteraJogadorDaVez();	
+						} else {
+							$scope.vencedor = angular.copy(retVencedor);
+						}
+
+					});
+				});
+
+			});
 		} else {
 			$scope.jogadorDaVez = "humano";
 		}
@@ -85,7 +108,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 			} else {
 
-				$scope.tabuleiro = retTabuleiro;
+				$scope.tabuleiro = angular.copy(retTabuleiro);
 
 				me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
 
@@ -94,7 +117,7 @@ app.controller("homeController",['$scope', function ($scope) {
 					if(retVencedor == ""){
 						me.alteraJogadorDaVez();	
 					} else {
-						$scope.vencedor = retVencedor;
+						$scope.vencedor = angular.copy(retVencedor);
 					}
 
 				});
@@ -105,12 +128,150 @@ app.controller("homeController",['$scope', function ($scope) {
 	};
 
 	//calcula a proxima jogada do computador
-	me.jogadaComputador = function(){
+	me.jogadaComputador = function(filhos, nivel, tabuleiro, callback){
+
+		var davez = "";
+
+		if(nivel%2 == 1){
+			davez = "computador";
+		} else {
+			davez = "humano"
+		}
+
+		for(var raiz = 0; raiz < 7; raiz++){
+			filhos.push([]);
+		}
+
+		//percorre as 7 colunas
+		var ordemColuna = [3,4,2,5,1,6,0];
+		for(var index in ordemColuna){
+			verificaNodo(ordemColuna[index], function(retNodo){
+				addRaiz(retNodo);
+			});
+		}
+
+		//escolhe melhor posibilidade
+		var maiorNodo = {pontuacao: -Infinity};
+		var menorNodo = {pontuacao: Infinity};
+		for(var nodo in filhos){
+			if(maiorNodo.pontuacao < filhos[nodo].pontuacao){
+				maiorNodo = filhos[nodo];
+			}
+
+			if(menorNodo.pontuacao > filhos[nodo].pontuacao){
+				menorNodo = filhos[nodo];
+			}
+		}
+		if(davez == "humano"){
+		//quero menor
+			callback(menorNodo, "menorNodo");
+			return;
+		} else if(davez == "computador"){
+			//quero maior
+			callback(maiorNodo, "maiorNodo");
+			return;
+		}
+
+		
+ 
+		// verificaNodo(3, function(ret3){
+		// 	addRaiz(ret3);
+		// 	verificaNodo(4, function(ret4){
+		// 		addRaiz(ret4);
+		// 		verificaNodo(2, function(ret2){
+		// 			addRaiz(ret2);
+		// 			verificaNodo(5, function(ret5){
+		// 				addRaiz(ret5);
+		// 				verificaNodo(1, function(ret1){
+		// 					addRaiz(ret1);
+		// 					verificaNodo(6, function(ret6){
+		// 						addRaiz(ret6);
+		// 						verificaNodo(0, function(ret0){
+		// 							addRaiz(ret0);
+
+		// 							var maiorNodo = {pontuacao: -Infinity};
+		// 							var menorNodo = {pontuacao: Infinity};
+
+
+
+		// 							for(var nodo in filhos){
+		// 								if(maiorNodo.pontuacao < filhos[nodo].pontuacao){
+		// 									maiorNodo = filhos[nodo];
+		// 								}
+
+		// 								if(menorNodo.pontuacao > filhos[nodo].pontuacao){
+		// 									menorNodo = filhos[nodo];
+		// 								}
+		// 							}
+
+		// 							if(davez == "humano"){
+		// 								//quero menor
+		// 								callback(menorNodo, "menorNodo");
+		// 								return;
+		// 							} else if(davez == "computador"){
+		// 								//quero maior
+		// 								callback(maiorNodo, "maiorNodo");
+		// 								return;
+		// 							}
+
+		// 						});
+		// 					});
+		// 				});
+		// 			});
+		// 		});
+		// 	});
+		// });
+
+		function addRaiz(ret){
+			if(ret != undefined){
+				filhos[ret.coluna] = ret;
+			}
+		}
+
+		function verificaNodo(coluna, callback){
+
+			me.jogada(tabuleiro, coluna, davez, function(retTabuleiro){
+
+				if(retTabuleiro == "colunaEstaCheia"){
+					//verifica se jogada possivel
+
+					callback();
+					return;
+
+				} else {
+					//verifica se nodo final/folha
+
+					me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
+						
+						if(retVencedor == "empate"){
+							callback({pontuacao: 0, coluna: coluna});
+							return;
+						} else if(nivel >= 5 || retVencedor == "humano" || retVencedor == "computador"){
+
+							me.calcValorTabuleiro(retTabuleiro, function(retPontuacao){
+								callback({pontuacao: retPontuacao, coluna: coluna});
+								return;
+							});
+
+						} else {
+							//se !nodo folha/final volta loop
+							me.jogadaComputador([], nivel++, retTabuleiro, function(retMelhorNodo){
+								callback(retMelhorNodo);
+							});
+
+						}
+
+					});
+
+				}
+
+			});
+		}
 
 	};
 
-	$scope.teste = function(){
-		me.calcValorTabuleiro($scope.tabuleiro, function(ret){
+	$scope.mostraValorTabuleiro = function(){
+		me.calcValorTabuleiro(angular.copy($scope.tabuleiro), function(ret){
 			console.log("valor do tabuleiro", ret);
 		});
 	};
@@ -164,7 +325,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		function somaJogada(jogada, x, y, callback){
 
-			if(x > 6 || y > 5 || y < 0){
+			if(x > 6 ||y > 5 || y < 0){
 
 				jogada.jogador = "";
 				jogada.soma = 0;
