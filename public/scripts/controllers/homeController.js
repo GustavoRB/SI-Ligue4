@@ -67,7 +67,7 @@ app.controller("homeController",['$scope', function ($scope) {
 		if($scope.jogadorDaVez == "humano"){
 			$scope.jogadorDaVez = "computador";
 
-			me.jogadaComputador([], 1, angular.copy($scope.tabuleiro), function(retDecisao, pq){
+			me.jogadaComputador([null, null, null, null, null, null, null], 1, angular.copy($scope.tabuleiro), function(retDecisao, pq){
 
 				console.log("retDecisao", retDecisao, pq);
 					
@@ -138,15 +138,11 @@ app.controller("homeController",['$scope', function ($scope) {
 			davez = "humano"
 		}
 
-		for(var raiz = 0; raiz < 7; raiz++){
-			filhos.push([]);
-		}
-
-		//percorre as 7 colunas
+		// percorre as 7 colunas
 		var ordemColuna = [3,4,2,5,1,6,0];
 		for(var index in ordemColuna){
-			verificaNodo(ordemColuna[index], function(retNodo){
-				addRaiz(retNodo);
+			verificaNodo(ordemColuna[index], nivel, function(retNodo){
+				filhos[ordemColuna[index]] = retNodo;
 			});
 		}
 
@@ -154,88 +150,44 @@ app.controller("homeController",['$scope', function ($scope) {
 		var maiorNodo = {pontuacao: -Infinity};
 		var menorNodo = {pontuacao: Infinity};
 		for(var nodo in filhos){
-			if(maiorNodo.pontuacao < filhos[nodo].pontuacao){
-				maiorNodo = filhos[nodo];
-			}
+			if(filhos[nodo] != undefined){
+				if(maiorNodo.pontuacao < filhos[nodo].pontuacao){
+					maiorNodo = {
+						pontuacao: filhos[nodo].pontuacao,
+						coluna: nodo
+					};
+				}
 
-			if(menorNodo.pontuacao > filhos[nodo].pontuacao){
-				menorNodo = filhos[nodo];
+				if(menorNodo.pontuacao > filhos[nodo].pontuacao){
+					menorNodo = {
+						pontuacao: filhos[nodo].pontuacao,
+						coluna: nodo
+					};
+				}
 			}
 		}
 		if(davez == "humano"){
-		//quero menor
+			//quero menor
+			console.log("estou passando o menor");
 			callback(menorNodo, "menorNodo");
 			return;
 		} else if(davez == "computador"){
 			//quero maior
+			console.log("estou passando o maior");
+			if(nivel == 1){
+				console.log("filhos", filhos);
+			}
 			callback(maiorNodo, "maiorNodo");
 			return;
 		}
 
-		
- 
-		// verificaNodo(3, function(ret3){
-		// 	addRaiz(ret3);
-		// 	verificaNodo(4, function(ret4){
-		// 		addRaiz(ret4);
-		// 		verificaNodo(2, function(ret2){
-		// 			addRaiz(ret2);
-		// 			verificaNodo(5, function(ret5){
-		// 				addRaiz(ret5);
-		// 				verificaNodo(1, function(ret1){
-		// 					addRaiz(ret1);
-		// 					verificaNodo(6, function(ret6){
-		// 						addRaiz(ret6);
-		// 						verificaNodo(0, function(ret0){
-		// 							addRaiz(ret0);
+		function verificaNodo(coluna, qualNivel, callbackNodo){
 
-		// 							var maiorNodo = {pontuacao: -Infinity};
-		// 							var menorNodo = {pontuacao: Infinity};
-
-
-
-		// 							for(var nodo in filhos){
-		// 								if(maiorNodo.pontuacao < filhos[nodo].pontuacao){
-		// 									maiorNodo = filhos[nodo];
-		// 								}
-
-		// 								if(menorNodo.pontuacao > filhos[nodo].pontuacao){
-		// 									menorNodo = filhos[nodo];
-		// 								}
-		// 							}
-
-		// 							if(davez == "humano"){
-		// 								//quero menor
-		// 								callback(menorNodo, "menorNodo");
-		// 								return;
-		// 							} else if(davez == "computador"){
-		// 								//quero maior
-		// 								callback(maiorNodo, "maiorNodo");
-		// 								return;
-		// 							}
-
-		// 						});
-		// 					});
-		// 				});
-		// 			});
-		// 		});
-		// 	});
-		// });
-
-		function addRaiz(ret){
-			if(ret != undefined){
-				filhos[ret.coluna] = ret;
-			}
-		}
-
-		function verificaNodo(coluna, callback){
-
-			me.jogada(tabuleiro, coluna, davez, function(retTabuleiro){
+			me.jogada(angular.copy(tabuleiro), coluna, davez, function(retTabuleiro){
 
 				if(retTabuleiro == "colunaEstaCheia"){
 					//verifica se jogada possivel
-
-					callback();
+					callbackNodo();
 					return;
 
 				} else {
@@ -244,19 +196,19 @@ app.controller("homeController",['$scope', function ($scope) {
 					me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
 						
 						if(retVencedor == "empate"){
-							callback({pontuacao: 0, coluna: coluna});
+							callbackNodo({pontuacao: 0, coluna: coluna});
 							return;
-						} else if(nivel >= 5 || retVencedor == "humano" || retVencedor == "computador"){
+						} else if(qualNivel >= 3 || retVencedor == "humano" || retVencedor == "computador"){
 
 							me.calcValorTabuleiro(retTabuleiro, function(retPontuacao){
-								callback({pontuacao: retPontuacao, coluna: coluna});
+								callbackNodo({pontuacao: retPontuacao, coluna: coluna});
 								return;
 							});
 
 						} else {
 							//se !nodo folha/final volta loop
-							me.jogadaComputador([], nivel++, retTabuleiro, function(retMelhorNodo){
-								callback(retMelhorNodo);
+							me.jogadaComputador([null, null, null, null, null, null, null], qualNivel+1, retTabuleiro, function(retMelhorNodo){
+								callbackNodo(retMelhorNodo);
 							});
 
 						}
@@ -270,6 +222,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	};
 
+	//mostra o valor atual do tabuleiro atravez do console
 	$scope.mostraValorTabuleiro = function(){
 		me.calcValorTabuleiro(angular.copy($scope.tabuleiro), function(ret){
 			console.log("valor do tabuleiro", ret);
@@ -453,10 +406,10 @@ app.controller("homeController",['$scope', function ($scope) {
 			} else if(sequenciaAtual[index].soma == 2){
 				pontos = 50;
 			} else if(sequenciaAtual[index].soma == 3){
-				pontos = 200;
+				pontos = 500;
 			} else if(sequenciaAtual[index].soma == 4 && !temQuadrupla){
 				temQuadrupla = true;
-				pontos = 10000;
+				pontos = 20000;
 			}
 
 			if(sequenciaAtual[index].jogador == "humano"){
