@@ -28,6 +28,9 @@ app.controller("homeController",['$scope', function ($scope) {
 	//recebe quem esta jogando
 	$scope.jogadorDaVez = null;
 
+	//guarda a ordem de pesquisa minmax
+	me.ordemColuna = [3,4,2,5,1,6,0];
+
 
 	//inicia o jogo
 	$scope.iniciar = function(){
@@ -67,9 +70,9 @@ app.controller("homeController",['$scope', function ($scope) {
 		if($scope.jogadorDaVez == "humano"){
 			$scope.jogadorDaVez = "computador";
 
-			me.jogadaComputador([null, null, null, null, null, null, null], 1, angular.copy($scope.tabuleiro), function(retDecisao, pq){
+			me.jogadaComputador(-Infinity, Infinity, [null, null, null, null, null, null, null], 1, angular.copy($scope.tabuleiro), function(retDecisao){
 
-				console.log("retDecisao", retDecisao, pq);
+				console.log("retDecisao", retDecisao);
 					
 				me.jogada(angular.copy($scope.tabuleiro), retDecisao.coluna, "computador", function(retTabuleiro){
 
@@ -128,7 +131,7 @@ app.controller("homeController",['$scope', function ($scope) {
 	};
 
 	//calcula a proxima jogada do computador
-	me.jogadaComputador = function(filhos, nivel, tabuleiro, callback){
+	me.jogadaComputador = function(alfa, beta, filhos, nivel, tabuleiro, callback){
 
 		var davez = "";
 
@@ -139,16 +142,89 @@ app.controller("homeController",['$scope', function ($scope) {
 		}
 
 		// percorre as 7 colunas
-		var ordemColuna = [3,4,2,5,1,6,0];
-		for(var index in ordemColuna){
-			verificaNodo(ordemColuna[index], nivel, function(retNodo){
-				filhos[ordemColuna[index]] = retNodo;
+		for(var index in me.ordemColuna){
+			verificaNodo(me.ordemColuna[index], nivel, function(retNodo){
+
+				filhos[me.ordemColuna[index]] = retNodo;
+
+				//atualiza alfa/beta
+				if(retNodo != undefined){
+					if(davez == "humano"){
+						//MIN
+						if(beta > retNodo.pontuacao){
+							beta = retNodo.pontuacao;
+						}
+					} else {
+						//MAX
+						if(alfa < retNodo.pontuacao){
+							alfa = retNodo.pontuacao;
+						}
+					}
+				}
+
+				//corta nodo
+				if(alfa > beta){
+					me.escolheMelhorNodo(davez, filhos, function(retMelhorAtual){
+						callback(retMelhorAtual);
+						return;
+					});
+				}
+
 			});
 		}
 
-		//escolhe melhor posibilidade
+		me.escolheMelhorNodo(davez, filhos, function(retMelhorAtual){
+			callback(retMelhorAtual);
+			return;
+		});
+
+		function verificaNodo(coluna, qualNivel, callbackNodo){
+
+			me.jogada(angular.copy(tabuleiro), coluna, davez, function(retTabuleiro){
+
+				if(retTabuleiro == "colunaEstaCheia"){
+					//verifica se jogada possivel
+					callbackNodo();
+					return;
+
+				} else {
+					//verifica se nodo final/folha
+
+					me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
+						
+						if(retVencedor == "empate"){
+							callbackNodo({pontuacao: 0, coluna: coluna});
+							return;
+						} else if(qualNivel >= 4 || retVencedor == "humano" || retVencedor == "computador"){
+
+							me.calcValorTabuleiro(retTabuleiro, function(retPontuacao){
+								callbackNodo({pontuacao: retPontuacao, coluna: coluna});
+								return;
+							});
+
+						} else {
+							//se !nodo folha/final volta loop
+							me.jogadaComputador(angular.copy(alfa), angular.copy(beta), [null, null, null, null, null, null, null], qualNivel+1, retTabuleiro, function(retMelhorNodo){
+								callbackNodo(retMelhorNodo);
+							});
+
+						}
+
+					});
+
+				}
+
+			});
+		}
+
+	};
+
+	//escolhe melhor posibilidade
+	me.escolheMelhorNodo = function(davez, filhos, callback){
+
 		var maiorNodo = {pontuacao: -Infinity};
 		var menorNodo = {pontuacao: Infinity};
+
 		for(var nodo in filhos){
 			if(filhos[nodo] != undefined){
 				if(maiorNodo.pontuacao < filhos[nodo].pontuacao){
@@ -168,58 +244,13 @@ app.controller("homeController",['$scope', function ($scope) {
 		}
 		if(davez == "humano"){
 			//quero menor
-			console.log("estou passando o menor");
-			callback(menorNodo, "menorNodo");
+			callback(menorNodo);
 			return;
-		} else if(davez == "computador"){
+		} else {
 			//quero maior
-			console.log("estou passando o maior");
-			if(nivel == 1){
-				console.log("filhos", filhos);
-			}
-			callback(maiorNodo, "maiorNodo");
+			callback(maiorNodo);
 			return;
 		}
-
-		function verificaNodo(coluna, qualNivel, callbackNodo){
-
-			me.jogada(angular.copy(tabuleiro), coluna, davez, function(retTabuleiro){
-
-				if(retTabuleiro == "colunaEstaCheia"){
-					//verifica se jogada possivel
-					callbackNodo();
-					return;
-
-				} else {
-					//verifica se nodo final/folha
-
-					me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
-						
-						if(retVencedor == "empate"){
-							callbackNodo({pontuacao: 0, coluna: coluna});
-							return;
-						} else if(qualNivel >= 3 || retVencedor == "humano" || retVencedor == "computador"){
-
-							me.calcValorTabuleiro(retTabuleiro, function(retPontuacao){
-								callbackNodo({pontuacao: retPontuacao, coluna: coluna});
-								return;
-							});
-
-						} else {
-							//se !nodo folha/final volta loop
-							me.jogadaComputador([null, null, null, null, null, null, null], qualNivel+1, retTabuleiro, function(retMelhorNodo){
-								callbackNodo(retMelhorNodo);
-							});
-
-						}
-
-					});
-
-				}
-
-			});
-		}
-
 	};
 
 	//mostra o valor atual do tabuleiro atravez do console
