@@ -28,9 +28,16 @@
 			<h2>Jogador da vez: {{jogadorDaVez}}</h2>
 		</div>
 
-		<!--VENCEDOR-->
-		<div ng-if="vencedor == 'humano' || vencedor == 'computador' " style="color:green">
-			<h1><b>{{vencedor}} venceu!</b></h1>
+		<!--VENCEDOR HUMANO-->
+		<div ng-if="vencedor === 1" style="color:red">
+			<h1><b>Humano venceu!</b></h1>
+			<h2><b>O impossível aconteceu!!!</b></h2>
+		</div>
+
+		<!--VENCEDOR COMPUTADOR-->
+		<div ng-if="vencedor === 0" style="color:green">
+			<h1><b>Computador venceu!</b></h1>
+			<h2><b>Haha, humano burro perdeu!</b></h2>
 		</div>
 
 		<!--EMPATE-->
@@ -49,27 +56,26 @@
 
 	<!--TABULEIRO-->
 	<div class="col-md-6" style="margin-top: 2em; margin-left:2em">
-		<div ng-repeat="(key, value) in tabuleiro">
-			<div style="position: absolute; margin-left:{{key*5}}em">
-				<!-- jogadorDaVez == 'computador' || -->
+		<div ng-repeat="coluna in tabuleiro track by $index">
+			<div style="position: absolute; margin-left:{{$index*5}}em">
 				<button 
 					class="btn btn-info" 
-					ng-click="jogadaHumano(key)"
-					ng-disabled="vencedor != '' || jogadorDaVez == null"
+					ng-click="jogadaHumano($index)"
+					ng-disabled="jogadorDaVez == 'computador' || vencedor != null || jogadorDaVez === null"
 					style="width:4em;margin-left:0.5em; margin-bottom:0.5em;" 
 				>
 					+
 				</button>
-				<div ng-repeat="linha in tabuleiro[key]">
+				<div ng-repeat="linha in tabuleiro[$index] track by $index">
 					 <div class="celula">
 
-						<span ng-show="linha.jogador == 'humano'">
+						<span ng-show="linha == 1">
 							<svg height="60" width="60">
 							  <circle cx="33" cy="33" r="20" stroke="black" stroke-width="1" fill="red" />
 							</svg>
 						</span>
 
-						<span ng-show="linha.jogador == 'computador'">
+						<span ng-show="linha == 0">
 							<svg height="60" width="60">
 							  <circle cx="33" cy="33" r="20" stroke="black" stroke-width="1" fill="blue" />
 							</svg>

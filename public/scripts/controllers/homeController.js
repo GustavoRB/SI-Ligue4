@@ -12,17 +12,17 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	//---------------------------------------
 
-	$scope.vencedor = "";
+	$scope.vencedor = null;
 
 	//tabuleiro que recebe o jogador dominante de cada celula
 	$scope.tabuleiro = [
-		[{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""}],
-		[{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""}],
-		[{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""}],
-		[{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""}],
-		[{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""}],
-		[{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""}],
-		[{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""},{jogador: ""}]
+		[null,null,null,null,null,null],
+		[null,null,null,null,null,null],
+		[null,null,null,null,null,null],
+		[null,null,null,null,null,null],
+		[null,null,null,null,null,null],
+		[null,null,null,null,null,null],
+		[null,null,null,null,null,null]
 	];
 
 	//recebe quem esta jogando
@@ -38,21 +38,24 @@ app.controller("homeController",['$scope', function ($scope) {
 		//para zerar tabuleiro
 		for(var coluna in $scope.tabuleiro){
 			for(var linha in $scope.tabuleiro[coluna]){
-				$scope.tabuleiro[coluna][linha].jogador = "";
+				$scope.tabuleiro[coluna][linha] = null;
 			}
 		}
-		$scope.vencedor = "";
+		$scope.vencedor = null;
 
 		$scope.jogadorDaVez = angular.copy($scope.quemComeca);
+		if($scope.quemComeca == "computador"){
+			me.jogadaComputador();
+		}
 	};
 
 	//adiciona peca na coluna selecionada
 	me.jogada = function(tabuleiro, coluna, jogadordavez, callback){
 
 		for(var linha = tabuleiro[coluna].length-1; linha >= 0; linha--){
-			if(tabuleiro[coluna][linha].jogador == ""){
+			if(tabuleiro[coluna][linha] == null){
 				
-				tabuleiro[coluna][linha].jogador = angular.copy(jogadordavez);
+				tabuleiro[coluna][linha] = angular.copy(jogadordavez);
 
 				callback(tabuleiro);
 
@@ -70,29 +73,8 @@ app.controller("homeController",['$scope', function ($scope) {
 		if($scope.jogadorDaVez == "humano"){
 			$scope.jogadorDaVez = "computador";
 
-			me.jogadaComputador(-Infinity, Infinity, [null, null, null, null, null, null, null], 1, angular.copy($scope.tabuleiro), function(retDecisao){
+			me.jogadaComputador();
 
-				console.log("retDecisao", retDecisao);
-					
-				me.jogada(angular.copy($scope.tabuleiro), retDecisao.coluna, "computador", function(retTabuleiro){
-
-					$scope.tabuleiro = angular.copy(retTabuleiro);
-
-
-					me.verificaFimDeJogo(angular.copy($scope.tabuleiro), function(retVencedor){
-
-						console.log("ret verificaFimDeJogo", retVencedor);
-
-						if(retVencedor == ""){
-							me.alteraJogadorDaVez();	
-						} else {
-							$scope.vencedor = angular.copy(retVencedor);
-						}
-
-					});
-				});
-
-			});
 		} else {
 			$scope.jogadorDaVez = "humano";
 		}
@@ -103,7 +85,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		$scope.colunaCheia = false;
 
-		me.jogada(angular.copy($scope.tabuleiro), coluna, angular.copy($scope.jogadorDaVez), function(retTabuleiro){
+		me.jogada(angular.copy($scope.tabuleiro), coluna, 1, function(retTabuleiro){
 
 			if(retTabuleiro == "colunaEstaCheia"){
 				
@@ -115,9 +97,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 				me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
 
-					console.log("ret verificaFimDeJogo", retVencedor);
-
-					if(retVencedor == ""){
+					if(retVencedor == null){
 						me.alteraJogadorDaVez();	
 					} else {
 						$scope.vencedor = angular.copy(retVencedor);
@@ -130,26 +110,47 @@ app.controller("homeController",['$scope', function ($scope) {
 		});
 	};
 
+	me.jogadaComputador = function(){
+		me.calcMinMax(-Infinity, Infinity, 0, [null, null, null, null, null, null, null], 1, angular.copy($scope.tabuleiro), function(retDecisao){
+
+			console.log("retDecisao", retDecisao);
+					
+			me.jogada(angular.copy($scope.tabuleiro), retDecisao.coluna, 0, function(retTabuleiro){
+
+				$scope.tabuleiro = angular.copy(retTabuleiro);
+
+				me.verificaFimDeJogo(angular.copy(retTabuleiro), function(retVencedor){
+
+					if(retVencedor == null){
+						me.alteraJogadorDaVez();	
+					} else {
+						$scope.vencedor = angular.copy(retVencedor);
+					}
+
+				});
+			});
+
+		});
+	};
+
 	//calcula a proxima jogada do computador
-	me.jogadaComputador = function(alfa, beta, filhos, nivel, tabuleiro, callback){
-
-		var davez = "";
-
-		if(nivel%2 == 1){
-			davez = "computador";
-		} else {
-			davez = "humano"
-		}
+	me.calcMinMax = function(alfa, beta, davez, filhos, nivel, tabuleiro, callback){
 
 		// percorre as 7 colunas
 		for(var index in me.ordemColuna){
+
+			//corta nodo
+			if(alfa > beta){
+				break;
+			}
+
 			verificaNodo(me.ordemColuna[index], nivel, function(retNodo){
 
 				filhos[me.ordemColuna[index]] = retNodo;
 
 				//atualiza alfa/beta
 				if(retNodo != undefined){
-					if(davez == "humano"){
+					if(davez){
 						//MIN
 						if(beta > retNodo.pontuacao){
 							beta = retNodo.pontuacao;
@@ -162,20 +163,14 @@ app.controller("homeController",['$scope', function ($scope) {
 					}
 				}
 
-				//corta nodo
-				if(alfa > beta){
-					me.escolheMelhorNodo(davez, filhos, function(retMelhorAtual){
-						callback(retMelhorAtual);
-						return;
-					});
-				}
-
 			});
 		}
 
+		if(nivel == 1){
+			console.log("filhos",filhos);
+		}
 		me.escolheMelhorNodo(davez, filhos, function(retMelhorAtual){
 			callback(retMelhorAtual);
-			return;
 		});
 
 		function verificaNodo(coluna, qualNivel, callbackNodo){
@@ -195,16 +190,15 @@ app.controller("homeController",['$scope', function ($scope) {
 						if(retVencedor == "empate"){
 							callbackNodo({pontuacao: 0, coluna: coluna});
 							return;
-						} else if(qualNivel >= 4 || retVencedor == "humano" || retVencedor == "computador"){
+						} else if(qualNivel >= 6 || retVencedor == 1 || retVencedor == 0){
 
 							me.calcValorTabuleiro(retTabuleiro, function(retPontuacao){
 								callbackNodo({pontuacao: retPontuacao, coluna: coluna});
-								return;
 							});
 
 						} else {
 							//se !nodo folha/final volta loop
-							me.jogadaComputador(angular.copy(alfa), angular.copy(beta), [null, null, null, null, null, null, null], qualNivel+1, retTabuleiro, function(retMelhorNodo){
+							me.calcMinMax(angular.copy(alfa), angular.copy(beta), !davez, [null, null, null, null, null, null, null], qualNivel+1, retTabuleiro, function(retMelhorNodo){
 								callbackNodo(retMelhorNodo);
 							});
 
@@ -242,7 +236,7 @@ app.controller("homeController",['$scope', function ($scope) {
 				}
 			}
 		}
-		if(davez == "humano"){
+		if(davez){
 			//quero menor
 			callback(menorNodo);
 			return;
@@ -295,19 +289,19 @@ app.controller("homeController",['$scope', function ($scope) {
 		//quarda quantas pecas existem por sequencia
 		var sequenciaAtual = [
 			{
-				jogador: "",
+				jogador: null,
 				soma: 0
 			},
 			{
-				jogador: "",
+				jogador: null,
 				soma: 0
 			},
 			{
-				jogador: "",
+				jogador: null,
 				soma: 0
 			},
 			{
-				jogador: "",
+				jogador: null,
 				soma: 0
 			}
 		];
@@ -316,7 +310,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 			if(x > 6 ||y > 5 || y < 0){
 
-				jogada.jogador = "";
+				jogada.jogador = null;
 				jogada.soma = 0;
 
 				callback("break");
@@ -324,14 +318,14 @@ app.controller("homeController",['$scope', function ($scope) {
 				return;
 
 			} else {
-				if(tabuleiro[x][y].jogador != ""){
-					if(jogada.jogador == ""){
-						jogada.jogador = tabuleiro[x][y].jogador;
+				if(tabuleiro[x][y] != null){
+					if(jogada.jogador == null){
+						jogada.jogador = tabuleiro[x][y];
 						jogada.soma = 1;
-					} else if(jogada.jogador == tabuleiro[x][y].jogador) {
+					} else if(jogada.jogador == tabuleiro[x][y]) {
 						jogada.soma ++;
 					} else {
-						jogada.jogador = "";
+						jogada.jogador = null;
 						jogada.soma = 0;
 
 						callback("break");
@@ -443,7 +437,7 @@ app.controller("homeController",['$scope', function ($scope) {
 				pontos = 20000;
 			}
 
-			if(sequenciaAtual[index].jogador == "humano"){
+			if(sequenciaAtual[index].jogador == 1){
 				somaAtual -= pontos;
 			}else{
 				somaAtual += pontos;
@@ -465,14 +459,21 @@ app.controller("homeController",['$scope', function ($scope) {
 	//verifica se alguem ganhou
 	me.verificaFimDeJogo = function(tabuleiro, callback){
 
+		var callReturn = false;
+
 		var possivelVencedor = {
-			jogador: "",
+			jogador: null,
 			soma: 0
 		};
 
 		//verifica colunas
 		for(var coluna in tabuleiro){
-			possivelVencedor.jogador = "";
+
+			if(callReturn){
+				return;
+			}
+
+			possivelVencedor.jogador = null;
 			possivelVencedor.soma = 0;
 
 			for(var linha in tabuleiro[coluna]){
@@ -483,7 +484,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 					if(possivelVencedor.soma >= 4){
 						callback(possivelVencedor.jogador);
-						return;
+						callReturn = true;
 					}
 
 				});
@@ -495,7 +496,12 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		//verifica linhas
 		for(var linha = 0; linha <= 5; linha++ ){
-			possivelVencedor.jogador = "";
+
+			if(callReturn){
+				return;
+			}
+
+			possivelVencedor.jogador = null;
 			possivelVencedor.soma = 0;
 
 			for (var coluna in tabuleiro) {
@@ -506,7 +512,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 					if(possivelVencedor.soma >= 4){
 						callback(possivelVencedor.jogador);
-						return;
+						callReturn = true;
 					}
 
 				});
@@ -527,7 +533,12 @@ app.controller("homeController",['$scope', function ($scope) {
 		colunaDejada = 3;
 
 		while(linha != 4 && coluna != 7){
-			possivelVencedor.jogador = "";
+
+			if(callReturn){
+				return;
+			}
+
+			possivelVencedor.jogador = null;
 			possivelVencedor.soma = 0;
 
 			while(linha <= linhaDesejada && coluna <= colunaDejada){
@@ -538,7 +549,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 					if(possivelVencedor.soma >= 4){
 						callback(possivelVencedor.jogador);
-						return;
+						callReturn = true;
 					}
 
 				});
@@ -583,7 +594,12 @@ app.controller("homeController",['$scope', function ($scope) {
 		colunaDejada = 3;
 
 		while(linha != 1 && coluna != 7){
-			possivelVencedor.jogador = "";
+
+			if(callReturn){
+				return;
+			}
+
+			possivelVencedor.jogador = null;
 			possivelVencedor.soma = 0;
 
 			while(linha >= linhaDesejada && coluna <= colunaDejada){
@@ -594,7 +610,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 					if(possivelVencedor.soma >= 4){
 						callback(possivelVencedor.jogador);
-						return;
+						callReturn = true;
 					}
 
 				});
@@ -632,26 +648,34 @@ app.controller("homeController",['$scope', function ($scope) {
 			}
 		}
 
-		me.verificaEmpate(tabuleiro, function(ret){
+		if(callReturn){
 
-			if(ret){
-				callback("empate");
-			} else {
-				callback("");
-			}
+			return;
 
-		});
+		} else {
+
+			me.verificaEmpate(tabuleiro, function(ret){
+
+				if(ret){
+					callback("empate");
+				} else {
+					callback(null);
+				}
+
+			});
+
+		}
 
 	};
 
 	//soma +1 em vencedor ou reseta calculo
 	me.somaPontosVitoria = function(tabuleiro, coluna, linha, possivelVencedor, callback){
 
-		if(tabuleiro[coluna][linha].jogador != ""){
+		if(tabuleiro[coluna][linha] != null){
 
-			if(tabuleiro[coluna][linha].jogador != possivelVencedor.jogador){
+			if(tabuleiro[coluna][linha] != possivelVencedor.jogador){
 				//quando sequencia nova
-				possivelVencedor.jogador = angular.copy(tabuleiro[coluna][linha].jogador);
+				possivelVencedor.jogador = angular.copy(tabuleiro[coluna][linha]);
 				possivelVencedor.soma = 1;
 			} else {
 				//quando na mesma sequencia
@@ -673,7 +697,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		for(var coluna in tabuleiro){
 
-			if(tabuleiro[coluna][0].jogador == ""){
+			if(tabuleiro[coluna][0] == null){
 				callback(false);
 				return;
 			}
