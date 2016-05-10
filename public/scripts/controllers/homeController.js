@@ -14,7 +14,7 @@ app.controller("homeController",['$scope', function ($scope) {
 	//mostra na interface o valor dado ao tabuleiro pela heuristica
 	$scope.valorDoTabuleiroAtual = null;
 
-	//quarda o vencedor
+	//guarda o vencedor
 	$scope.vencedor = null;
 
 	//tabuleiro que recebe o jogador dominante de cada celula
@@ -33,6 +33,9 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	//guarda a ordem de pesquisa minmax
 	me.ordemColuna = [3,4,2,5,1,6,0];
+
+	//guarda o número de iteracao
+	$scope.mostraIteracao = null;
 
 
 	//inicia o jogo
@@ -121,6 +124,9 @@ app.controller("homeController",['$scope', function ($scope) {
 	};
 
 	me.jogadaComputador = function(){
+
+		$scope.mostraIteracao = 0;
+
 		me.calcMinMax(-Infinity, Infinity, 0, [null, null, null, null, null, null, null], 1, angular.copy($scope.tabuleiro), function(retDecisao){
 
 			console.log("retDecisao", retDecisao);
@@ -147,6 +153,8 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	//calcula a proxima jogada do computador
 	me.calcMinMax = function(alfa, beta, davez, filhos, nivel, tabuleiro, callback){
+
+		$scope.mostraIteracao++;
 
 		// percorre as 7 colunas
 		for(var index in me.ordemColuna){
@@ -298,7 +306,7 @@ app.controller("homeController",['$scope', function ($scope) {
 		//da um valor as possiveis sequencias
 		var somaAtual = 0;
 
-		//quarda quantas pecas existem por sequencia
+		//guarda quantas pecas existem por sequencia
 		var sequenciaAtual = [
 			{
 				jogador: null,
