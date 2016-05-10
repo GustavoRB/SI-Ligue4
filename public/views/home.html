@@ -1,6 +1,13 @@
 <div class="row">
 	<div class="col-md-4" style="margin-top: 2em; margin-left:2em">
 
+		<!--REINICIAR-->
+		<span ng-show="quemComeca != undefined">
+			<button class="btn btn-success" ng-click="iniciar()" style="width: 15.4em">Recomeçar</button>
+			<br>
+			<br>
+		</span>
+
 		<!--QUEM COMECA-->
 		<label>Quem Começa?</label>
 		<select ng-model="quemComeca" ng-change="iniciar()">
@@ -28,13 +35,13 @@
 		<!--VENCEDOR HUMANO-->
 		<div ng-if="vencedor === 1" style="color:red">
 			<h1><b>Humano venceu!</b></h1>
-			<h2><b>O impossível aconteceu!!!</b></h2>
+			<!-- <h2><b>O impossível aconteceu!!!</b></h2> -->
 		</div>
 
 		<!--VENCEDOR COMPUTADOR-->
 		<div ng-if="vencedor === 0" style="color:blue">
 			<h1><b>Computador venceu!</b></h1>
-			<h2><b>Haha, humano burro perdeu!</b></h2>
+			<!-- <h2><b>Haha, humano burro perdeu!</b></h2> -->
 		</div>
 
 		<!--EMPATE-->

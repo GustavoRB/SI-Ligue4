@@ -1,10 +1,33 @@
 /**
- * Created by Osvaldo on 23/09/15.
+ * Created by Gustavo & Osvaldo on 23/09/15.
  */
 
 app.controller("homeController",['$scope', function ($scope) {
 
 	var me = this;
+
+	//----------COMANDOS DO TECLADO----------
+	$(document).keyup(function(event){
+		if($scope.jogadorDaVez == 'computador' || $scope.vencedor != null || $scope.jogadorDaVez === null){
+			console.log("ops, n posso jogar agora!");
+		} else {
+
+			var tecla = null;
+
+			for(var btn = 0; btn <= 6; btn++){
+				if(event.keyCode == 49+btn){
+
+					$scope.jogadaHumano(btn);
+
+					me.reiniciaScopeApply();
+
+					return;
+				}
+			}
+
+		}
+	});
+	//---------------------------------------
 
 	//------VARIAVEIS DE VALIDACAO-----------
 
@@ -37,6 +60,14 @@ app.controller("homeController",['$scope', function ($scope) {
 	//guarda o número de iteracao
 	$scope.mostraIteracao = null;
 
+	me.reiniciaScopeApply = function(){
+		var phase = $scope.$root.$$phase;
+		if(phase == '$apply' || phase == '$digest'){
+		   $scope.$eval();
+		}else{
+		   $scope.$apply();
+		}
+	};
 
 	//inicia o jogo
 	$scope.iniciar = function(){
@@ -84,8 +115,6 @@ app.controller("homeController",['$scope', function ($scope) {
 		if($scope.jogadorDaVez == "humano"){
 			$scope.jogadorDaVez = "computador";
 
-			me.jogadaComputador();
-
 		} else {
 			$scope.jogadorDaVez = "humano";
 		}
@@ -121,6 +150,13 @@ app.controller("homeController",['$scope', function ($scope) {
 			}
 
 		});
+
+		setTimeout(function(){
+			console.log("vou comecar comp");
+			me.jogadaComputador();
+		}, 1000);
+		
+
 	};
 
 	me.jogadaComputador = function(){
@@ -144,6 +180,8 @@ app.controller("homeController",['$scope', function ($scope) {
 					} else {
 						$scope.vencedor = angular.copy(retVencedor);
 					}
+
+					me.reiniciaScopeApply();
 
 				});
 			});
