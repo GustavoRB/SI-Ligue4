@@ -11,7 +11,10 @@ app.controller("homeController",['$scope', function ($scope) {
 	$scope.colunaCheia = false;
 
 	//---------------------------------------
+	//mostra na interface o valor dado ao tabuleiro pela heuristica
+	$scope.valorDoTabuleiroAtual = null;
 
+	//quarda o vencedor
 	$scope.vencedor = null;
 
 	//tabuleiro que recebe o jogador dominante de cada celula
@@ -34,6 +37,10 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	//inicia o jogo
 	$scope.iniciar = function(){
+
+		if($scope.quemComeca == undefined){
+			return;
+		}
 
 		//para zerar tabuleiro
 		for(var coluna in $scope.tabuleiro){
@@ -70,6 +77,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	//altera entre jogada humano e jogada computador
 	me.alteraJogadorDaVez = function(){
+
 		if($scope.jogadorDaVez == "humano"){
 			$scope.jogadorDaVez = "computador";
 
@@ -97,6 +105,8 @@ app.controller("homeController",['$scope', function ($scope) {
 
 				me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
 
+					$scope.mostraValorTabuleiro();
+
 					if(retVencedor == null){
 						me.alteraJogadorDaVez();	
 					} else {
@@ -120,6 +130,8 @@ app.controller("homeController",['$scope', function ($scope) {
 				$scope.tabuleiro = angular.copy(retTabuleiro);
 
 				me.verificaFimDeJogo(angular.copy(retTabuleiro), function(retVencedor){
+
+					$scope.mostraValorTabuleiro();
 
 					if(retVencedor == null){
 						me.alteraJogadorDaVez();	
@@ -250,7 +262,7 @@ app.controller("homeController",['$scope', function ($scope) {
 	//mostra o valor atual do tabuleiro atravez do console
 	$scope.mostraValorTabuleiro = function(){
 		me.calcValorTabuleiro(angular.copy($scope.tabuleiro), function(ret){
-			console.log("valor do tabuleiro", ret);
+			$scope.valorDoTabuleiroAtual = angular.copy(ret);
 		});
 	};
 
@@ -469,10 +481,6 @@ app.controller("homeController",['$scope', function ($scope) {
 		//verifica colunas
 		for(var coluna in tabuleiro){
 
-			if(callReturn){
-				return;
-			}
-
 			possivelVencedor.jogador = null;
 			possivelVencedor.soma = 0;
 
@@ -496,10 +504,6 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		//verifica linhas
 		for(var linha = 0; linha <= 5; linha++ ){
-
-			if(callReturn){
-				return;
-			}
 
 			possivelVencedor.jogador = null;
 			possivelVencedor.soma = 0;
@@ -533,10 +537,6 @@ app.controller("homeController",['$scope', function ($scope) {
 		colunaDejada = 3;
 
 		while(linha != 4 && coluna != 7){
-
-			if(callReturn){
-				return;
-			}
 
 			possivelVencedor.jogador = null;
 			possivelVencedor.soma = 0;
@@ -594,10 +594,6 @@ app.controller("homeController",['$scope', function ($scope) {
 		colunaDejada = 3;
 
 		while(linha != 1 && coluna != 7){
-
-			if(callReturn){
-				return;
-			}
 
 			possivelVencedor.jogador = null;
 			possivelVencedor.soma = 0;
@@ -684,7 +680,7 @@ app.controller("homeController",['$scope', function ($scope) {
 
 		} else {
 
-			possivelVencedor.jogador = "";
+			possivelVencedor.jogador = null;
 			possivelVencedor.soma = 0;
 
 		}

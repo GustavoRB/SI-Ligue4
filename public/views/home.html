@@ -12,16 +12,18 @@
 		<br>
 		<button class="btn btn-success btn-lg" ng-click="iniciar()">Iniciar</button>
 
-		<!--BTN TESTE>-->
-		<br>
-		<button class="btn btn-success btn-lg" ng-click="mostraValorTabuleiro()" style="margin-top:2em">mostra valor tabuleiro</button>
+		<!--MOSTRA VALOR TABULEIRO-->
+		<!-- <br> -->
+		<!-- <button class="btn btn-success btn-lg" ng-click="mostraValorTabuleiro()" style="margin-top:2em">mostra valor tabuleiro</button> -->
+
 
 		<!--LEGENDA-->
 		<br>
 		<label>Humano: <b style="color:red">Vermelho</b> </label>
 		<br>
 		<label>Computador: <b style="color:blue">Azul</b></label>
-		<br>
+
+		<h4><label><b>Pontuação do tabuleiro: {{valorDoTabuleiroAtual}}</b></label></h4>
 
 		<!--JOGADOR DA VEZ-->
 		<div class="">
@@ -35,7 +37,7 @@
 		</div>
 
 		<!--VENCEDOR COMPUTADOR-->
-		<div ng-if="vencedor === 0" style="color:green">
+		<div ng-if="vencedor === 0" style="color:blue">
 			<h1><b>Computador venceu!</b></h1>
 			<h2><b>Haha, humano burro perdeu!</b></h2>
 		</div>
