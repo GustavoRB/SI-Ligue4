@@ -60,6 +60,13 @@ app.controller("homeController",['$scope', function ($scope) {
 	//guarda o número de iteracao
 	$scope.mostraIteracao = null;
 
+	//guarda o nivel do tabuleiro atual
+	me.nivelTabuleiroAtual = 0;
+
+	//guarda o nivel maximo q a arvore pode alcancar
+	me.maxNivelArvore = 6;
+
+	//para ativar $scope$apply() de forma a evitar erros
 	me.reiniciaScopeApply = function(){
 		var phase = $scope.$root.$$phase;
 		if(phase == '$apply' || phase == '$digest'){
@@ -83,6 +90,9 @@ app.controller("homeController",['$scope', function ($scope) {
 			}
 		}
 		$scope.vencedor = null;
+		$scope.mostraIteracao = null;
+		$scope.valorDoTabuleiroAtual = null;
+		me.nivelTabuleiroAtual = 0;
 
 		$scope.jogadorDaVez = angular.copy($scope.quemComeca);
 		if($scope.quemComeca == "computador"){
@@ -138,24 +148,25 @@ app.controller("homeController",['$scope', function ($scope) {
 				me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
 
 					$scope.mostraValorTabuleiro();
+					me.nivelTabuleiroAtual++;
+					me.maxNivelArvore = 6 + Math.floor(me.nivelTabuleiroAtual/8);
+					console.log("nivel apos humano", me.nivelTabuleiroAtual, me.maxNivelArvore);
 
-					if(retVencedor == null){
-						me.alteraJogadorDaVez();	
-					} else {
-						$scope.vencedor = angular.copy(retVencedor);
-					}
-
+					setTimeout(function(){
+						if(retVencedor == null){
+							me.alteraJogadorDaVez();
+							console.log("vou comecar comp");
+							me.jogadaComputador();
+						} else {
+							$scope.vencedor = angular.copy(retVencedor);
+						}
+					}, 1000);
+					
 				});
 
 			}
 
 		});
-
-		setTimeout(function(){
-			console.log("vou comecar comp");
-			me.jogadaComputador();
-		}, 1000);
-		
 
 	};
 
@@ -174,6 +185,9 @@ app.controller("homeController",['$scope', function ($scope) {
 				me.verificaFimDeJogo(angular.copy(retTabuleiro), function(retVencedor){
 
 					$scope.mostraValorTabuleiro();
+					me.nivelTabuleiroAtual++;
+					me.maxNivelArvore = 6 + Math.floor(me.nivelTabuleiroAtual/8);
+					console.log("nivel apos computador", me.nivelTabuleiroAtual, me.maxNivelArvore);
 
 					if(retVencedor == null){
 						me.alteraJogadorDaVez();	
@@ -248,9 +262,9 @@ app.controller("homeController",['$scope', function ($scope) {
 						if(retVencedor == "empate"){
 							callbackNodo({pontuacao: 0, coluna: coluna});
 							return;
-						} else if(qualNivel >= 6 || retVencedor == 1 || retVencedor == 0){
+						} else if(qualNivel >= me.maxNivelArvore || retVencedor == 1 || retVencedor == 0){
 
-							me.calcValorTabuleiro(retTabuleiro, function(retPontuacao){
+							me.calcValorTabuleiro(angular.copy(me.nivelTabuleiroAtual) + qualNivel,retTabuleiro, function(retPontuacao){
 								callbackNodo({pontuacao: retPontuacao, coluna: coluna});
 							});
 
@@ -307,17 +321,16 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	//mostra o valor atual do tabuleiro atravez do console
 	$scope.mostraValorTabuleiro = function(){
-		me.calcValorTabuleiro(angular.copy($scope.tabuleiro), function(ret){
+		me.calcValorTabuleiro(me.nivelTabuleiroAtual ,angular.copy($scope.tabuleiro), function(ret){
 			$scope.valorDoTabuleiroAtual = angular.copy(ret);
 		});
 	};
 
 	//da uma nota ao tabuleiro
-	me.calcValorTabuleiro = function(tabuleiro, callback){
+	me.calcValorTabuleiro = function(nivel, tabuleiro, callback){
 
 		var somaTabuleiro = 0;
 		var temQuadrupla = false;
-		var nivel = 0;
 
 		for(var coluna = 0; coluna <= 6; coluna++){
 			for(var linha = 0; linha <= 5; linha++){
@@ -325,10 +338,6 @@ app.controller("homeController",['$scope', function ($scope) {
 
 					somaTabuleiro += ret.somaAtual;
 					temQuadrupla = ret.temQuadrupla;
-
-					if(tabuleiro[coluna][linha] != undefined){
-						nivel++;
-					}
 
 				});
 			}
