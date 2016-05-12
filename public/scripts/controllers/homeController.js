@@ -210,8 +210,6 @@ app.controller("homeController",['$scope', function ($scope) {
 	//calcula a proxima jogada do computador
 	me.calcMinMax = function(alfa, beta, davez, filhos, nivel, tabuleiro, callback){
 
-		$scope.mostraIteracao++;
-
 		// percorre as 7 colunas
 		for(var index in me.ordemColuna){
 
@@ -260,6 +258,8 @@ app.controller("homeController",['$scope', function ($scope) {
 
 				} else {
 					//verifica se nodo final/folha
+
+					$scope.mostraIteracao++;
 
 					me.verificaFimDeJogo(retTabuleiro, function(retVencedor){
 						
