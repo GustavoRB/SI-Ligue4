@@ -6,6 +6,8 @@ app.controller("homeController",['$scope', function ($scope) {
 
 	var me = this;
 
+	// console.log = function(){};
+
 	//----------COMANDOS DO TECLADO----------
 	$(document).keyup(function(event){
 		if($scope.jogadorDaVez == 'computador' || $scope.vencedor != null || $scope.jogadorDaVez === null){
@@ -152,13 +154,15 @@ app.controller("homeController",['$scope', function ($scope) {
 					me.maxNivelArvore = 6 + Math.floor(me.nivelTabuleiroAtual/8);
 					console.log("nivel apos humano", me.nivelTabuleiroAtual, me.maxNivelArvore);
 
+					me.alteraJogadorDaVez();
+
 					setTimeout(function(){
 						if(retVencedor == null){
-							me.alteraJogadorDaVez();
 							console.log("vou comecar comp");
 							me.jogadaComputador();
 						} else {
 							$scope.vencedor = angular.copy(retVencedor);
+							me.reiniciaScopeApply();
 						}
 					}, 1000);
 					
